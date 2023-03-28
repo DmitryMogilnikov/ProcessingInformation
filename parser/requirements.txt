@@ -1,0 +1,10 @@
+python-djvulibre
+textract
+flake8
+isort
+pytest
+docx
+pdfminer-six
+python-docx
+beautifulsoup4
+dotenv

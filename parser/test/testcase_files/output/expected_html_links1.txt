@@ -1,0 +1,2 @@
+localhost
+https://google.com
