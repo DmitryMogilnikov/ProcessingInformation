@@ -16,7 +16,7 @@ namespace WebCrawler.Core.Schedulers
     /// </summary>
     // Это основная часть класса с базовой логикой и, в том числе, реализацией публичного интерфейса.
     // Другие части содержат только отдельные аспекты внутренней логики.
-    public partial class Scheduler : IScheduler
+    public partial class Scheduler : IScheduler, IDisposable
     {
         /// <summary>
         /// Событие, происходящее когда содержимое всех страниц из очереди было собрано.
@@ -129,6 +129,15 @@ namespace WebCrawler.Core.Schedulers
         public void Stop()
         {
             Stop(isExternalReason: true);
+        }
+
+        /// <summary>
+        /// Метод, завершающий процесс сбора страниц и освобождающий используемые неуправляемые ресурсы.
+        /// </summary>
+        public void Dispose()
+        {
+            Stop();
+            _workersSharedState.Dispose();
         }
 
         private void Stop(bool isExternalReason)
