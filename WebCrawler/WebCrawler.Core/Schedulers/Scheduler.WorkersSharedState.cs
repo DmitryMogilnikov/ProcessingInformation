@@ -15,8 +15,9 @@ namespace WebCrawler.Core.Schedulers
         /// </summary>
         private class WorkersSharedState : IDisposable
         {
-            public event Action AllWorkersHaveFinished;
+            public event Action? AllWorkersHaveFinished;
 
+            private readonly ReaderWriterLockSlim _lock = new();
             private CancellationTokenSource _cancellationTokenSource = new();
             private int _requestsCount = 0;
             private int _idleWorkersCount = 0;
@@ -94,16 +95,35 @@ namespace WebCrawler.Core.Schedulers
             /// </summary>
             public void DecrementIdleWorkersCount()
             {
+                // Блокировка на чтение, хотя мы изменяем значение потому, что декремент атомарный и для него самого блокировка не нужна.
+                // Она здесь для того, чтобы при проверке того, что вся работа сделана, какой-нибудь воркер не поменял число
+                // простаивающих воркеров ПОСЛЕ его проверки, но ДО проверки пустоты очереди. В этом случае эксклюзивная блокировка для изменения значения не нужна.
+                // При инкременте блокировка не нужна, т.к. несвоевременный инкремент лишь заставит воркер прождать один лишний цикл, что не страшно.
+                _lock.EnterReadLock();
+
                 Interlocked.Decrement(ref _idleWorkersCount);
+
+                _lock.ExitReadLock();
             }
 
             /// <summary>
-            /// Метод, проверяющий что все воркеры простаивают.
+            /// Метод, проверяющий что все воркеры простаивают, а очередь пуста.
             /// </summary>
-            /// <returns>Если все воркеры простаивают - <see langword="true"/>, иначе - <see langword="false"/>.</returns>
-            public bool IsAllWorkersIdle()
+            /// <returns>Если все воркеры простаивают и очередь пуста - <see langword="true"/>, иначе - <see langword="false"/>.</returns>
+            public bool IsAllWorkDone()
             {
-                return _idleWorkersCount == Settings.NumberOfWorkers;
+                // Блокировка на запись, хотя мы читаем, потому что важно запретить изменение, а при изменении мы берём блокировку на чтение, как описано выше.
+                _lock.EnterWriteLock();
+
+                // Если все воркеры в данный момент простаивают - это может значить, что работа действительно закончилась, но не обязательно -
+                // возможно, какой-то воркер успел подложить работы другому, прежде простаивающему, и уйти в простой, а этот другой ещё не успел проверить наличие для него работы и выйти из простоя.
+                // Чтобы исключить такую ситуацию, дополнительно проверяем, что не только все воркеры простаивают, но и очередь пуста.
+                // Мы проверяем пустоту очереди только в тех случаях, когда все воркеры простаивают, потому что для ConcurrentMultiReaderQueue эта операция полностью блокирующая,
+                // а значит - дорогая, т.к. заставит ждать всех остальных воркеров. Но если они и так (предположительно) ничего не делают - то можно.
+                bool result = _idleWorkersCount == Settings.NumberOfWorkers && Queue.IsEmpty();
+
+                _lock.ExitWriteLock();
+                return result;
             }
 
             /// <summary>

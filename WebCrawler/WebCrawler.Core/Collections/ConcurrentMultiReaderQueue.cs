@@ -217,6 +217,25 @@ namespace WebCrawler.Core.Collections
         }
 
         /// <summary>
+        /// Метод, проверяющий, что для конкретного читателя в очереди нет элементов.
+        /// </summary>
+        /// <param name="readerId">
+        /// Идентификатор (номер по порядку) читателя, наличие элементов для которого требуется проверить.
+        /// </param>
+        /// <returns>
+        /// Если в очереди нет элементов для читателя с идентификатором <paramref name="readerId"/>
+        /// - <see langword="true"/>, иначе - <see langword="false"/>.
+        /// </returns>
+        /// <remarks>Этот метод неблокирующий.</remarks>
+        public bool IsBucketEmpty(int readerId)
+        {
+            if (!_buckets.TryGetValue(readerId, out ConcurrentQueue<TValue>? bucket))
+                return true;
+
+            return bucket.IsEmpty;
+        }
+
+        /// <summary>
         /// Метод, работающий как <see cref="Enqueue(TValue)"/>, но не берущий блокировку, что позволяет сэкономить в тех ситуациях, где она не нужна.
         /// </summary>
         private void EnqueueInternal(TValue value)

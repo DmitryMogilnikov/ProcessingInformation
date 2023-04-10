@@ -48,5 +48,17 @@ namespace WebCrawler.Core.Interfaces
         /// </summary>
         /// <returns>Если в очереди нет элементов - <see langword="true"/>, иначе - <see langword="false"/>.</returns>
         bool IsEmpty();
+
+        /// <summary>
+        /// Метод, проверяющий, что для конкретного читателя в очереди нет элементов.
+        /// </summary>
+        /// <param name="readerId">
+        /// Идентификатор (номер по порядку) читателя, наличие элементов для которого требуется проверить.
+        /// </param>
+        /// <returns>
+        /// Если в очереди нет элементов для читателя с идентификатором <paramref name="readerId"/>
+        /// - <see langword="true"/>, иначе - <see langword="false"/>.
+        /// </returns>
+        bool IsBucketEmpty(int readerId);
     }
 }
