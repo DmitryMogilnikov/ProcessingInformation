@@ -88,7 +88,14 @@ namespace WebCrawler.Core.Schedulers
         {
             while (!sharedState.CancellationToken.IsCancellationRequested)
             {
-                await timer.WaitForNextTickAsync();
+                try
+                {
+                    await timer.WaitForNextTickAsync(sharedState.CancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
                 sharedState.ResetRequestsCount();
             }
         }
@@ -103,7 +110,14 @@ namespace WebCrawler.Core.Schedulers
 
             while (!sharedState.CancellationToken.IsCancellationRequested)
             {
-                await timer.WaitForNextTickAsync();
+                try
+                {
+                    await timer.WaitForNextTickAsync(sharedState.CancellationToken);
+                }
+                catch (OperationCanceledException)
+                {
+                    return;
+                }
                 IMultiReaderQueueSnapshot<IQueuedUrl> queueSnapshot = queue.ExportQueueSnapshot();
                 _ = queueSnapshotSaver.TrySaveSnapshot(queueSnapshot);
             }

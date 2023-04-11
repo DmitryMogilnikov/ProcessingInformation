@@ -48,11 +48,14 @@ namespace WebCrawler.Core.Schedulers
         public Scheduler(ISchedulerSettings settings)
         {
             _workersSharedState = new WorkersSharedState(settings);
-            _workersSharedState.AllWorkersHaveFinished += () => Stop(isExternalReason: false);
+            // Мы не можем обрабатывать событие в потоке, который его вызвал, т.к. это приведёт к дедлоку -
+            // обработчик события будет ждать завершения в т.ч. и того потока, в котором выполняется он сам.
+            // Поэтому при возникновении события будем создавать новый поток и обрабатывать событие в нём.
+            _workersSharedState.AllWorkersHaveFinished += () => Task.Run(() => Stop(isExternalReason: false));
         }
 
         /// <summary>
-        /// Метод, импортироующий снапшот очереди URL-адресов.
+        /// Метод, импортирующий снапшот очереди URL-адресов.
         /// </summary>
         /// <param name="snapshot">Снапшот, который требуется импортировать.</param>
         /// <remarks>Этот метод заменяет текущую очередь на очередь из снапшота.</remarks>
