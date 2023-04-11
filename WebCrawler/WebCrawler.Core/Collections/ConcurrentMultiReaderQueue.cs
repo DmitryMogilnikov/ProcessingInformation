@@ -162,7 +162,7 @@ namespace WebCrawler.Core.Collections
         /// <returns>Если удалось извлечь очередной элемент - <see langword="true"/>, иначе <see langword="false"/>.</returns>
         public bool TryDequeue(int readerId, [NotNullWhen(true)] out TValue? value)
         {
-            if (readerId >= _buckets.Count)
+            if (readerId >= _bucketCount)
                 throw new ArgumentOutOfRangeException(nameof(readerId));
 
             _lock.EnterReadLock();
