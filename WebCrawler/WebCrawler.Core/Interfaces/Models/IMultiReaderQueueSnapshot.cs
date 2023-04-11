@@ -6,7 +6,7 @@ namespace WebCrawler.Core.Interfaces.Models
     /// Интерфейс снапшота состояния очереди с несколькими читателями.
     /// </summary>
     /// <typeparam name="TValue">Тип элементов очереди.</typeparam>
-    public interface IMultiReaderQueueSnapshot<TValue> where TValue : notnull
+    public interface IMultiReaderQueueSnapshot<out TValue> where TValue : notnull
     {
         /// <summary>
         /// Набор элементов очереди, распределённых по читателям.

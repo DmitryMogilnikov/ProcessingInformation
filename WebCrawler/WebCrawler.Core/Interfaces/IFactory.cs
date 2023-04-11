@@ -4,7 +4,7 @@
     /// Интерфейс фабрики каких-либо сущностей.
     /// </summary>
     /// <typeparam name="T">Тип сущностей, создаваемых фабрикой.</typeparam>
-    public interface IFactory<T> where T : notnull
+    public interface IFactory<out T> where T : notnull
     {
         /// <summary>
         /// Метод, создающий новую сущность.

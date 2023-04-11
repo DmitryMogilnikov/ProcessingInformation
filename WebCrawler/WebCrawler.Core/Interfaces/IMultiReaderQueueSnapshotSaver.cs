@@ -6,7 +6,7 @@ namespace WebCrawler.Core.Interfaces
     /// Интерфейс сущности, сохраняющей снапшоты очереди с несколькими читателями.
     /// </summary>
     /// <typeparam name="TValue">Тип элементов очереди.</typeparam>
-    public interface IMultiReaderQueueSnapshotSaver<TValue> where TValue : notnull
+    public interface IMultiReaderQueueSnapshotSaver<in TValue> where TValue : notnull
     {
         /// <summary>
         /// Метод, пытающийся сохранить снапшот очереди с несколькими читателями.
