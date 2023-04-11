@@ -240,7 +240,7 @@ namespace WebCrawler.Core.Collections
         /// </summary>
         private void EnqueueInternal(TValue value)
         {
-            int bucketNum = value!.GetHashCode() % _bucketCount;
+            int bucketNum = Math.Abs(value.GetHashCode()) % _bucketCount;
             ConcurrentQueue<TValue> queue = _buckets.GetOrAdd(bucketNum, _ => new ConcurrentQueue<TValue>());
             queue.Enqueue(value);
         }
