@@ -39,7 +39,7 @@ namespace WebCrawler.Core.Models
         /// </remarks>
         public string GetNextFilePath()
         {
-            string fileName = string.Format(FileNameTemplate, DateTime.UtcNow.ToString(@"yyyy-MM-ddTHH_mm_ss"));
+            string fileName = string.Format(FileNameTemplate, DateTime.UtcNow.ToString("yyyy-MM-ddTHH_mm_ss"));
             return System.IO.Path.Combine(Path, fileName);
         }
     }

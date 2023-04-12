@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System;
+using System.IO;
 using System.Text.Json;
 using WebCrawler.Core.Interfaces;
 using WebCrawler.Core.Interfaces.Models;
@@ -43,8 +45,9 @@ namespace WebCrawler.Core.Savers
                 JsonSerializer.Serialize(file, snapshot);
                 return true;
             }
-            catch
+            catch (Exception ex)
             {
+                Debug.WriteLine(ex);
                 return false;
             }
         }

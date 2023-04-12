@@ -19,8 +19,8 @@ namespace WebCrawler.Core.Schedulers
             IMultiReaderQueue<IQueuedUrl> queue = sharedState.Queue;
             ISchedulerSettings settings = sharedState.Settings;
 
-            IWebDownloader webDownloader = settings.WebDownloaderFactory.Create();
-            IContentSaver contentSaver = settings.ContentSaverFactory.Create();
+            using IWebDownloader webDownloader = settings.WebDownloaderFactory.Create();
+            using IContentSaver contentSaver = settings.ContentSaverFactory.Create();
 
             bool isIdle = false;
 
