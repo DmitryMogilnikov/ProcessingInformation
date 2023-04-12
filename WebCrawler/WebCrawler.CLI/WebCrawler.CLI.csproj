@@ -7,4 +7,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\WebCrawler.Core\WebCrawler.Core.csproj" />
+  </ItemGroup>
+
 </Project>
