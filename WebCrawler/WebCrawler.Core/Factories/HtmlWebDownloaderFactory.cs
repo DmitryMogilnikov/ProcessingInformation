@@ -20,6 +20,7 @@ namespace WebCrawler.Core.Factories
         {
             _urlResolver = urlResolver;
             _httpClient = new HttpClient();
+            _httpClient.DefaultRequestHeaders.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/108.0.0.0 YaBrowser/23.1.5.710 Yowser/2.5 Safari/537.36");
         }
 
         /// <summary>
