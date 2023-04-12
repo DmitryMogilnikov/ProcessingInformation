@@ -71,6 +71,8 @@ namespace WebCrawler.Core.Schedulers
 
                 Uri url = queuedUrl.Url;
                 DateTime timestamp = DateTime.UtcNow;
+                IPageContent? pageContent = await webDownloader.GetPageContentAsync(url);
+                if (pageContent is null)
                 {
                     // Если по какой-то причине не получилось загрузить содержимое страницы -
                     // проверяем, что мы её ещё не слишком много раз пробовали загрузить, и если нет - возвращаем в очередь.
