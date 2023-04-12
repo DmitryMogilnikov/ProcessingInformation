@@ -70,7 +70,7 @@ namespace WebCrawler.Core.Schedulers
                 }
 
                 Uri url = queuedUrl.Url;
-                if (!webDownloader.TryGetPageContent(url, out IPageContent pageContent))
+                DateTime timestamp = DateTime.UtcNow;
                 {
                     // Если по какой-то причине не получилось загрузить содержимое страницы -
                     // проверяем, что мы её ещё не слишком много раз пробовали загрузить, и если нет - возвращаем в очередь.
@@ -80,7 +80,7 @@ namespace WebCrawler.Core.Schedulers
                 }
 
                 sharedState.Queue.TryEnqueueMany(pageContent.Links.Select(link => new QueuedUrl(link)));
-                _ = contentSaver.TrySaveContent(url, pageContent.TextContent);
+                _ = contentSaver.TrySaveContent(url, timestamp, pageContent.TextContent);
             }
         }
 
