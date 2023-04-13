@@ -3,6 +3,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using WebCrawler.Core.Factories;
+using WebCrawler.Core.Getters;
+using WebCrawler.Core.Interfaces;
 using WebCrawler.Core.Interfaces.Models;
 using WebCrawler.Core.Models;
 using WebCrawler.Core.Resolvers;
@@ -12,11 +14,13 @@ namespace WebCrawler.CLI
 {
     internal class Program
     {
-        static void Main(string[] args)
+        static void Main()
         {
             // TODO: Добавить возможность нормально настраивать сбор - через аргументы командной строки или интерактивно.
+            HttpDataGetterFactory httpDataGetterFactory = new();
+            CreatingFactory<FileDataGetter> fileDataGetterFactory = new();
             SubdomainOnlyUrlResolver urlResolver = new();
-            HtmlWebDownloaderFactory webDownloaderFactory = new(urlResolver);
+            HtmlContentParserFactory contentParserFactory = new(urlResolver);
             string timestampString = DateTime.UtcNow.ToString("yyyy-MM-ddTHH_mm_ss");
             string outputFilePath = $"./test_output/content_{timestampString}.csv";
             ConcurrentCsvContentSaverCachingFactory contentSaverFactory = new(outputFilePath);
@@ -27,7 +31,8 @@ namespace WebCrawler.CLI
                                                       RequestsPerSecond: 1000,
                                                       MaxRetries: 2,
                                                       QueueSnapshotSavePeriod: SchedulerSettings.DefaultQueueSnapshotSavePeriod,
-                                                      WebDownloaderFactory: webDownloaderFactory,
+                                                      new IFactory<IDataGetter>[] { httpDataGetterFactory, fileDataGetterFactory },
+                                                      new[] { contentParserFactory },
                                                       ContentSaverFactory: contentSaverFactory,
                                                       QueueSnapshotSaverFactory: snapshotSaverFactory);
             using Scheduler scheduler = new(schedulerSettings);

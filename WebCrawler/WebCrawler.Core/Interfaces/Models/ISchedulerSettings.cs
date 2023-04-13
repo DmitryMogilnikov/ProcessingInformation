@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace WebCrawler.Core.Interfaces.Models
 {
@@ -28,9 +29,14 @@ namespace WebCrawler.Core.Interfaces.Models
         TimeSpan QueueSnapshotSavePeriod { get; }
 
         /// <summary>
-        /// Фабрика загрузчиков содержимого Web-страниц.
+        /// Упорядоченный в порядке уменьшения приоритета набор фабрик получателей данных.
         /// </summary>
-        IFactory<IWebDownloader> WebDownloaderFactory { get; }
+        IEnumerable<IFactory<IDataGetter>> DataGetterFactories { get; }
+
+        /// <summary>
+        /// Упорядоченный в порядке уменьшения приоритета набор фабрик парсеров данных в содержимое страницы.
+        /// </summary>
+        IEnumerable<IFactory<IContentParser>> ContentParserFactories { get; }
 
         /// <summary>
         /// Фабрика сущностей, сохраняющих содержимое Web-страниц.

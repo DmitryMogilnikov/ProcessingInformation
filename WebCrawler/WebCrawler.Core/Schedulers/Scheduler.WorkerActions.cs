@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -19,7 +20,8 @@ namespace WebCrawler.Core.Schedulers
             IMultiReaderQueue<IQueuedUrl> queue = sharedState.Queue;
             ISchedulerSettings settings = sharedState.Settings;
 
-            using IWebDownloader webDownloader = settings.WebDownloaderFactory.Create();
+            IEnumerable<IDataGetter> dataGetters = settings.DataGetterFactories.Select(factory => factory.Create());
+            IEnumerable<IContentParser> contentParsers = settings.ContentParserFactories.Select(factory => factory.Create());
             using IContentSaver contentSaver = settings.ContentSaverFactory.Create();
 
             bool isIdle = false;
@@ -71,7 +73,29 @@ namespace WebCrawler.Core.Schedulers
 
                 Uri url = queuedUrl.Url;
                 DateTime timestamp = DateTime.UtcNow;
-                IPageContent? pageContent = await webDownloader.GetPageContentAsync(url);
+
+                string? pageData = null;
+                foreach (var dataGetter in dataGetters)
+                {
+                    if (dataGetter.CanGetContent(url))
+                    {
+                        pageData = await dataGetter.GetContentAsync(url);
+                        if (pageData is not null)
+                            break;
+                    }
+                }
+
+                IPageContent? pageContent = null;
+                if (pageData is not null)
+                {
+                    foreach (var contentParser in contentParsers)
+                    {
+                        pageContent = await contentParser.ParseContentAsync(pageData, url);
+                        if (pageContent is not null) 
+                            break;
+                    }
+                }
+
                 if (pageContent is null)
                 {
                     // Если по какой-то причине не получилось загрузить содержимое страницы -

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using WebCrawler.Core.Interfaces;
 using WebCrawler.Core.Interfaces.Models;
 
@@ -11,14 +12,16 @@ namespace WebCrawler.Core.Models
     /// <param name="RequestsPerSecond">Максимальное суммарное количество запросов в секунду.</param>
     /// <param name="MaxRetries">Максимальное количество повторных попыток запросить страницу.</param>
     /// <param name="QueueSnapshotSavePeriod">Частота сохранения снапшота очереди.</param>
-    /// <param name="WebDownloaderFactory">Фабрика загрузчиков содержимого Web-страниц.</param>
+    /// <param name="DataGetterFactories">Упорядоченный в порядке уменьшения приоритета набор фабрик получателей данных.</param>
+    /// <param name="ContentParserFactories">Упорядоченный в порядке уменьшения приоритета набор фабрик парсеров данных в содержимое страницы.</param>
     /// <param name="ContentSaverFactory">Фабрика сущностей, сохраняющих содержимое Web-страниц.</param>
     /// <param name="QueueSnapshotSaverFactory">Фабрика сущностей, сохраняющих снапшоты очереди.</param>
     public record SchedulerSettings(int NumberOfWorkers,
                                     int RequestsPerSecond,
                                     int MaxRetries,
                                     TimeSpan QueueSnapshotSavePeriod,
-                                    IFactory<IWebDownloader> WebDownloaderFactory,
+                                    IEnumerable<IFactory<IDataGetter>> DataGetterFactories,
+                                    IEnumerable<IFactory<IContentParser>> ContentParserFactories,
                                     IFactory<IContentSaver> ContentSaverFactory,
                                     IFactory<IMultiReaderQueueSnapshotSaver<IQueuedUrl>> QueueSnapshotSaverFactory)
         : ISchedulerSettings
@@ -46,19 +49,22 @@ namespace WebCrawler.Core.Models
         /// <summary>
         /// Конструктор, создающий настройки планировщика запросов со значениями по умолчанию.
         /// </summary>
-        /// <param name="webDownloaderFactory">Фабрика загрузчиков содержимого Web-страниц.</param>
+        /// <param name="dataGetterFactories">Упорядоченный в порядке уменьшения приоритета набор фабрик получателей данных.</param>
+        /// <param name="contentParserFactories">Упорядоченный в порядке уменьшения приоритета набор фабрик парсеров данных в содержимое страницы.</param>
         /// <param name="contentSaverFactory">Фабрика сущностей, сохраняющих содержимое Web-страниц.</param>
-        /// <param name="QueueSnapshotSaverFactory">Фабрика сущностей, сохраняющих снапшоты очереди.</param>
-        public SchedulerSettings(IFactory<IWebDownloader> webDownloaderFactory, 
+        /// <param name="queueSnapshotSaverFactory">Фабрика сущностей, сохраняющих снапшоты очереди.</param>
+        public SchedulerSettings(IEnumerable<IFactory<IDataGetter>> dataGetterFactories,
+                                 IEnumerable<IFactory<IContentParser>> contentParserFactories,
                                  IFactory<IContentSaver> contentSaverFactory,
-                                 IFactory<IMultiReaderQueueSnapshotSaver<IQueuedUrl>> QueueSnapshotSaverFactory) 
+                                 IFactory<IMultiReaderQueueSnapshotSaver<IQueuedUrl>> queueSnapshotSaverFactory) 
             : this(DefaultNumberOfWorkes,
                    DefaultRequestsPerSecond,
                    DefaultMaxRetries,
                    DefaultQueueSnapshotSavePeriod,
-                   webDownloaderFactory,
+                   dataGetterFactories,
+                   contentParserFactories,
                    contentSaverFactory,
-                   QueueSnapshotSaverFactory)
+                   queueSnapshotSaverFactory)
         {
         }
     }
