@@ -33,7 +33,7 @@ namespace WebCrawler.Core.Getters
         /// </returns>
         public async Task<string?> GetContentAsync(Uri url)
         {
-            string path = url.LocalPath;
+            string path = url.LocalPath.TrimEnd('\\');
 
             if (!File.Exists(path))
                 return null;

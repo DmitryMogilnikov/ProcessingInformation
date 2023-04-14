@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using WebCrawler.Core.Interfaces;
 
 namespace WebCrawler.Core.Resolvers
@@ -51,7 +52,8 @@ namespace WebCrawler.Core.Resolvers
         /// </remarks>
         protected static Uri CombineWithBase(string url, Uri baseUrl)
         {
-            string baseUrlString = baseUrl.ToString();
+            string baseUrlString = baseUrl.IsFile ? (Path.GetDirectoryName(baseUrl.AbsolutePath.TrimEnd('/')) ?? "file:///") : baseUrl.ToString();
+
             if (!baseUrlString.EndsWith("/"))
             {
                 baseUrlString += "/";
