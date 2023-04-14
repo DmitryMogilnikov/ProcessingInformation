@@ -110,7 +110,7 @@ namespace WebCrawler.Core.Models
         }
 
         /// <summary>
-        /// Метод, увеличивающий количество уникальных внутренних ссылок (<see cref="BrokenLinksCount"/>) на указанную величину.
+        /// Метод, увеличивающий количество уникальных внутренних ссылок (<see cref="UniqueInternalLinksCount"/>) на указанную величину.
         /// </summary>
         /// <param name="value">Величина, на которую требуется увеличить количество уникальных внутренних ссылок.</param>
         public void AddToUniqueInternalLinksCount(ulong value)
