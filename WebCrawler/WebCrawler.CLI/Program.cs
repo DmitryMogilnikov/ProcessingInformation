@@ -17,10 +17,11 @@ namespace WebCrawler.CLI
         static void Main()
         {
             // TODO: Добавить возможность нормально настраивать сбор - через аргументы командной строки или интерактивно.
+            ConcurrentStatistics statistics = new();
             HttpDataGetterFactory httpDataGetterFactory = new();
             CreatingFactory<FileDataGetter> fileDataGetterFactory = new();
-            SubdomainOnlyUrlResolver urlResolver = new();
-            HtmlContentParserFactory contentParserFactory = new(urlResolver);
+            SubdomainOnlyUrlResolver urlResolver = new(statistics);
+            HtmlContentParserFactory contentParserFactory = new(urlResolver, statistics);
             string timestampString = DateTime.UtcNow.ToString("yyyy-MM-ddTHH_mm_ss");
             string outputFilePath = $"./test_output/content_{timestampString}.csv";
             ConcurrentCsvContentSaverCachingFactory contentSaverFactory = new(outputFilePath);
@@ -34,7 +35,8 @@ namespace WebCrawler.CLI
                                                       new IFactory<IDataGetter>[] { httpDataGetterFactory, fileDataGetterFactory },
                                                       new[] { contentParserFactory },
                                                       ContentSaverFactory: contentSaverFactory,
-                                                      QueueSnapshotSaverFactory: snapshotSaverFactory);
+                                                      QueueSnapshotSaverFactory: snapshotSaverFactory,
+                                                      statistics);
             using Scheduler scheduler = new(schedulerSettings);
 
             string currentDirectory = Path.TrimEndingDirectorySeparator(Directory.GetCurrentDirectory());
@@ -76,6 +78,7 @@ namespace WebCrawler.CLI
             {
             }
 
+            WriteStatistics(statistics);
             Console.ReadKey();
         }
 
@@ -93,6 +96,12 @@ namespace WebCrawler.CLI
                 Debug.WriteLine(ex);
             }
             return result;
+        }
+
+        private static void WriteStatistics(IStatistics statistics)
+        {
+            Console.WriteLine("Статистика сбора:");
+            Console.WriteLine(statistics.ToString());
         }
     }
 }

@@ -24,6 +24,8 @@ namespace WebCrawler.Core.Schedulers
             IEnumerable<IContentParser> contentParsers = settings.ContentParserFactories.Select(factory => factory.Create());
             using IContentSaver contentSaver = settings.ContentSaverFactory.Create();
 
+            IStatistics statistics = settings.Statistics;
+
             bool isIdle = false;
 
             while (!cancellationToken.IsCancellationRequested)
@@ -102,11 +104,18 @@ namespace WebCrawler.Core.Schedulers
                     // проверяем, что мы её ещё не слишком много раз пробовали загрузить, и если нет - возвращаем в очередь.
                     if (queuedUrl.RequestsCount < sharedState.Settings.MaxRetries)
                         sharedState.Queue.TryEnqueue(new QueuedUrl(url, queuedUrl.RequestsCount + 1));
+                    else
+                        statistics.IncrementBrokenLinksCount();
                     continue;
                 }
 
-                sharedState.Queue.TryEnqueueMany(pageContent.Links.Select(link => new QueuedUrl(link)));
+                IReadOnlyCollection<IQueuedUrl> linksFailedToEnqueue = sharedState.Queue.TryEnqueueMany(pageContent.Links.Select(link => new QueuedUrl(link)));
                 _ = contentSaver.TrySaveContent(url, timestamp, pageContent.TextContent);
+
+                statistics.IncrementProcessedPagesCount();
+                int totalLinks = pageContent.Links.Count();
+                int uniqueLinks = totalLinks - linksFailedToEnqueue.Count;
+                statistics.AddToUniqueInternalLinksCount((ulong)uniqueLinks);
             }
         }
 

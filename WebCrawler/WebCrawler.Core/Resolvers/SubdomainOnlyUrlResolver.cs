@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using WebCrawler.Core.Interfaces;
+using WebCrawler.Core.Interfaces.Models;
 
 namespace WebCrawler.Core.Resolvers
 {
@@ -12,6 +13,17 @@ namespace WebCrawler.Core.Resolvers
     /// </summary>
     public class SubdomainOnlyUrlResolver : UrlResolver, IUrlResolver
     {
+        private readonly IStatistics _statistics;
+
+        /// <summary>
+        /// Конструктор.
+        /// </summary>
+        /// <param name="statistics">Сущность, хранящая статистику сбора страниц.</param>
+        public SubdomainOnlyUrlResolver(IStatistics statistics) : base()
+        {
+            _statistics = statistics;
+        }
+
         /// <summary>
         /// Метод, пытающийся разрешить URL-адрес. 
         /// Этот метод проверяет, что получившийся URL имеет тот же домен, что и <paramref name="baseUrl"/>, 
@@ -37,8 +49,17 @@ namespace WebCrawler.Core.Resolvers
                 Uri combinedUrl = CombineWithBase(url, baseUrl);
 
                 DomainParser domainParser = new(new WebTldRuleProvider());
-                if (domainParser.Parse(combinedUrl).RegistrableDomain != domainParser.Parse(baseUrl).RegistrableDomain)
+                DomainInfo combinedUrlDomainInfo = domainParser.Parse(combinedUrl);
+                DomainInfo baseUrlDomainInfo = domainParser.Parse(baseUrl);
+                if (combinedUrlDomainInfo.RegistrableDomain != baseUrlDomainInfo.RegistrableDomain)
+                {
+                    _statistics.IncrementExternalLinksCount();
+
                     return false;
+                }
+
+                if (combinedUrlDomainInfo.SubDomain is not null)
+                    _statistics.AddInternalSubdomen(combinedUrlDomainInfo.SubDomain);
 
                 resolvedUrl = combinedUrl;
                 return true;

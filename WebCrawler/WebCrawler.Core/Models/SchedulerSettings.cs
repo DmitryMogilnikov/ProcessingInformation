@@ -16,6 +16,7 @@ namespace WebCrawler.Core.Models
     /// <param name="ContentParserFactories">Упорядоченный в порядке уменьшения приоритета набор фабрик парсеров данных в содержимое страницы.</param>
     /// <param name="ContentSaverFactory">Фабрика сущностей, сохраняющих содержимое Web-страниц.</param>
     /// <param name="QueueSnapshotSaverFactory">Фабрика сущностей, сохраняющих снапшоты очереди.</param>
+    /// <param name="Statistics">Сущность, хранящая статистику сбора страниц.</param>
     public record SchedulerSettings(int NumberOfWorkers,
                                     int RequestsPerSecond,
                                     int MaxRetries,
@@ -23,7 +24,8 @@ namespace WebCrawler.Core.Models
                                     IEnumerable<IFactory<IDataGetter>> DataGetterFactories,
                                     IEnumerable<IFactory<IContentParser>> ContentParserFactories,
                                     IFactory<IContentSaver> ContentSaverFactory,
-                                    IFactory<IMultiReaderQueueSnapshotSaver<IQueuedUrl>> QueueSnapshotSaverFactory)
+                                    IFactory<IMultiReaderQueueSnapshotSaver<IQueuedUrl>> QueueSnapshotSaverFactory,
+                                    IStatistics Statistics)
         : ISchedulerSettings
     {
         /// <summary>
@@ -53,10 +55,12 @@ namespace WebCrawler.Core.Models
         /// <param name="contentParserFactories">Упорядоченный в порядке уменьшения приоритета набор фабрик парсеров данных в содержимое страницы.</param>
         /// <param name="contentSaverFactory">Фабрика сущностей, сохраняющих содержимое Web-страниц.</param>
         /// <param name="queueSnapshotSaverFactory">Фабрика сущностей, сохраняющих снапшоты очереди.</param>
+        /// <param name="statistics">Сущность, хранящая статистику сбора страниц.</param>
         public SchedulerSettings(IEnumerable<IFactory<IDataGetter>> dataGetterFactories,
                                  IEnumerable<IFactory<IContentParser>> contentParserFactories,
                                  IFactory<IContentSaver> contentSaverFactory,
-                                 IFactory<IMultiReaderQueueSnapshotSaver<IQueuedUrl>> queueSnapshotSaverFactory) 
+                                 IFactory<IMultiReaderQueueSnapshotSaver<IQueuedUrl>> queueSnapshotSaverFactory,
+                                 IStatistics statistics) 
             : this(DefaultNumberOfWorkes,
                    DefaultRequestsPerSecond,
                    DefaultMaxRetries,
@@ -64,7 +68,8 @@ namespace WebCrawler.Core.Models
                    dataGetterFactories,
                    contentParserFactories,
                    contentSaverFactory,
-                   queueSnapshotSaverFactory)
+                   queueSnapshotSaverFactory,
+                   statistics)
         {
         }
     }

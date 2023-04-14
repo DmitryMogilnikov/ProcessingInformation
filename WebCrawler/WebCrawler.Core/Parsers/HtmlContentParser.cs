@@ -17,16 +17,22 @@ namespace WebCrawler.Core.Parsers
     public class HtmlContentParser : IContentParser
     {
         private const string HrefAttributeName = "href";
+        private const string DocxExtension = ".docx";
+        private const string DocExtension = ".doc";
+        private const string PdfExtension = ".pdf";
 
         private readonly IUrlResolver _urlResolver;
+        private readonly IStatistics _statistics;
 
         /// <summary>
         /// Конструктор.
         /// </summary>
         /// <param name="urlResolver">Сущность, разрешающая URL-адреса основываясь на URL-адресе страницы, с которой они были получены.</param>
-        public HtmlContentParser(IUrlResolver urlResolver)
+        /// <param name="statistics">Сущность, хранящая статистику сбора страниц.</param>
+        public HtmlContentParser(IUrlResolver urlResolver, IStatistics statistics)
         {
             _urlResolver = urlResolver;
+            _statistics = statistics;
         }
 
         /// <summary>
@@ -61,6 +67,15 @@ namespace WebCrawler.Core.Parsers
                 string url = anchor.GetAttribute(HrefAttributeName)!;
                 if (_urlResolver.TryResolveUrl(url, baseUrl, out Uri? resolvedUrl))
                     yield return resolvedUrl;
+
+                _statistics.IncrementTotalLinksCount();
+                url = url.TrimEnd('/');
+                if (url.EndsWith(DocxExtension))
+                    _statistics.AddDocxLink(url);
+                else if (url.EndsWith(DocExtension))
+                    _statistics.AddDocLink(url);
+                else if (url.EndsWith(PdfExtension))
+                    _statistics.AddPdfLink(url);
             }
         }
     }

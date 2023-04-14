@@ -47,5 +47,10 @@ namespace WebCrawler.Core.Interfaces.Models
         /// Фабрика сущностей, сохраняющих снапшоты очереди.
         /// </summary>
         IFactory<IMultiReaderQueueSnapshotSaver<IQueuedUrl>> QueueSnapshotSaverFactory { get; }
+
+        /// <summary>
+        /// Сущность, хранящая статистику сбора страниц.
+        /// </summary>
+        IStatistics Statistics { get; }
     }
 }
