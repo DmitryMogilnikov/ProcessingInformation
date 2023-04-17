@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -116,6 +117,8 @@ namespace WebCrawler.Core.Schedulers
                 int totalLinks = pageContent.Links.Count();
                 int uniqueLinks = totalLinks - linksFailedToEnqueue.Count;
                 statistics.AddToUniqueInternalLinksCount((ulong)uniqueLinks);
+
+                Debug.WriteLine($"Обработано {statistics.ProcessedPagesCount} страниц из {statistics.UniqueInternalLinksCount - statistics.BrokenLinksCount}.");
             }
         }
 

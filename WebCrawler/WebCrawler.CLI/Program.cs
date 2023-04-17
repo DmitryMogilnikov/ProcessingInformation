@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using WebCrawler.Core.Factories;
 using WebCrawler.Core.Getters;
 using WebCrawler.Core.Interfaces;
@@ -14,7 +15,7 @@ namespace WebCrawler.CLI
 {
     internal class Program
     {
-        static void Main()
+        static async Task Main()
         {
             // TODO: Добавить возможность нормально настраивать сбор - через аргументы командной строки или интерактивно.
             ConcurrentStatistics statistics = new();
@@ -42,7 +43,7 @@ namespace WebCrawler.CLI
             string currentDirectory = Path.TrimEndingDirectorySeparator(Directory.GetCurrentDirectory());
             // Дерево страниц для университетского сайта очень большое, это займёт кучу времени!
             //scheduler.AddUrls(new Uri("https://spbu.ru"));
-            scheduler.AddUrls(new Uri("https://metanit.com/"));
+            scheduler.AddUrls(new Uri("https://msu.ru"));
 
             DateTime startTime = default;
             bool isFinished = false;
@@ -75,8 +76,7 @@ namespace WebCrawler.CLI
             startTime = DateTime.Now;
             scheduler.Start();
             while (!isFinished)
-            {
-            }
+                await Task.Delay(TimeSpan.FromSeconds(15));
 
             WriteStatistics(statistics);
             Console.ReadKey();
