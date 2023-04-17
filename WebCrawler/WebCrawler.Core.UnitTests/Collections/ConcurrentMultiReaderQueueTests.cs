@@ -25,7 +25,7 @@ namespace WebCrawler.Core.UnitTests.Collections
 
 
         [Fact]
-        public void TestTryDequeue() // оставляем
+        public void TestTryDequeue_WhenEmpty() // оставляем
         {
 
             ConcurrentMultiReaderQueue<int> concurrentQueue = new ConcurrentMultiReaderQueue<int>(5, null);
@@ -78,13 +78,40 @@ namespace WebCrawler.Core.UnitTests.Collections
                                            *  ;
                                            */  
         }
-        
-        
-        
-        
-        
-        
-  
+
+        [Fact]
+        public void TestIsEmpty_WhenEmpty()
+        {
+            ConcurrentMultiReaderQueue<int> concurrentQueue = new ConcurrentMultiReaderQueue<int>(5, EqualityComparer<int>.Default);
+
+            bool act = concurrentQueue.IsEmpty();
+
+            Assert.True(act);
+        }
+
+        [Fact]
+        public void TestIsEmpty_WhenNotEmpty()
+        {
+            ConcurrentMultiReaderQueue<int> concurrentQueue = new ConcurrentMultiReaderQueue<int>(5, EqualityComparer<int>.Default);
+            concurrentQueue.TryEnqueue(1);
+
+            bool act = concurrentQueue.IsEmpty();
+
+            Assert.False(act);
+        }
+
+        [Fact]
+        public void TestTryDequeue_WhenNotEmpty()
+        {
+            ConcurrentMultiReaderQueue<int> concurrentQueue = new ConcurrentMultiReaderQueue<int>(1, EqualityComparer<int>.Default);
+            concurrentQueue.TryEnqueue(1);
+
+            int value;
+            bool act = concurrentQueue.TryDequeue(0, out value);
+
+            Assert.True(act);
+            Assert.Equal(1, value);
+        }
     }
 
 
