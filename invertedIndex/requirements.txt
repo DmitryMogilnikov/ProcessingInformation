@@ -1,0 +1,5 @@
+pandas
+pymorphy2
+tqdm
+nltk
+nbmake
