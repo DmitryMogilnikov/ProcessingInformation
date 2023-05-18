@@ -3,7 +3,7 @@ import nltk
 import pandas as pd
 import pymorphy2
 
-from utils import has_cyrillic, has_english
+from src.utils import has_cyrillic, has_english
 
 nltk.download('stopwords')
 nltk.download('wordnet')
