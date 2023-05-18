@@ -13,7 +13,8 @@ def get_inverted_index(
     index_file_name: str
 ) -> None:
     df = get_data(input_file_name)
-    df, list_errors = lemmatization(df)  # переменные из ретерна, которые возвращает функция
+    # переменные из ретерна, которые возвращает функция
+    df, list_errors = lemmatization(df)
     df = drop_errors(df=df, list_errors=list_errors)
     save_to_csv(df, file_path=output_file_name_csv)
     inverted_index_dict = create_inverted_index_dict(df)
@@ -24,7 +25,7 @@ def get_inverted_index(
 
 
 if __name__ == "__main__":
-    data_path = "invertedIndex/data"
+    data_path = "data"
 
     get_inverted_index(
         input_file_name=f"{data_path}/spbu_content.csv",

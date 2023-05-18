@@ -11,7 +11,7 @@ def has_cyrillic(text: str) -> bool:
 
 # проверяем, слово содержит английские буквы или нет
 def has_english(text: str) -> bool:
-    return bool(re.search('[a-zA-z]', text))
+    return bool(re.search('[a-zA-Z]', text))
 
 
 def drop_errors(df: pd.DataFrame, list_errors: List) -> pd.DataFrame:

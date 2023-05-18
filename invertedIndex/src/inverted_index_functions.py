@@ -3,7 +3,7 @@ import nltk
 import pandas as pd
 import pymorphy2
 
-from invertedIndex.src.utils import has_cyrillic, has_english
+from utils import has_cyrillic, has_english
 
 nltk.download('stopwords')
 nltk.download('wordnet')
@@ -16,8 +16,10 @@ morph = pymorphy2.MorphAnalyzer()
 
 def lemmatization(df: pd.DataFrame) -> pd.DataFrame:
     list_errors = []
-    for i in range(df.shape[0]):
-        sub_string = df.iloc[i, 2]
+    row_count = df.shape[0]
+    for idx in range(row_count):
+        print('Finished lemmatization {} % of all events'.format(int(100*(idx/row_count))))
+        sub_string = df.iloc[idx, 2]
         if not isinstance(sub_string, str):
             continue
         # делаем маленькие буквы, разбиваем текст на токены
@@ -36,21 +38,22 @@ def lemmatization(df: pd.DataFrame) -> pd.DataFrame:
 
         try:
             # нормальная форма токена
-            word_list = [morph.parse(j)[0].normal_form for j in word_list]
+            word_list = [morph.parse(word)[0].normal_form for word in word_list]
             # заменяем 3 столбик на лемматизированный текст
-            df.iloc[i, 2] = ' '.join(word_list)
+            df.iloc[idx, 2] = ' '.join(word_list)
         except:
             # в лист ошибок добавляем номер строки, в которой ошибка
-            list_errors.append(i)
+            list_errors.append(idx)
 
     return df, list_errors
 
 
 def create_inverted_index_dict(df: pd.DataFrame) -> pd.DataFrame:
     inverted_index_dict = defaultdict(set)
-
+    row_count = df.shape[0]
     # цикл, который обрабатывает строки
-    for idx in range(df.shape[0]):
+    for idx in range(row_count):
+        print('Finished creating index {} % of all events'.format(int(100*(idx/row_count))))
         if isinstance(df.iloc[idx][2], str):
             tokens_list = list()
             # если строка не встречается в листе ошибок
