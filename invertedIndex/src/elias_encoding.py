@@ -8,6 +8,7 @@ from work_with_files import get_inverted_index_json, save_inverted_index_json
 
 def diff_encode(num_list: List[int]) -> List[int]:
     diff_list = []
+    num_list = sorted(num_list)
     for i, num in enumerate(num_list):
         if len(diff_list) != 0:
             diff_list.append(num - num_list[i - 1])
