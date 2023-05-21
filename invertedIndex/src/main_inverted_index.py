@@ -4,7 +4,7 @@ sys.path.append(os.getcwd())
 
 from work_with_files import get_data, save_inverted_index_json, save_to_csv
 from inverted_index_functions import lemmatization, create_inverted_index_dict
-from utils import drop_errors
+from src.utils import drop_errors
 
 
 def get_inverted_index(

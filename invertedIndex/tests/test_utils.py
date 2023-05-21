@@ -1,7 +1,8 @@
-import pytest
 import pandas as pd
+import pytest
 
-from src.utils import *
+from src.utils import has_cyrillic, has_english, drop_errors
+
 
 @pytest.mark.parametrize(
     'text, expected_result',
@@ -36,13 +37,13 @@ def test_has_english(text: str, expected_result: bool) -> None:
 
 def test_drop_errors() -> None:
     data_with_errors = pd.DataFrame({
-        'link': ['test.com', 'test.ru', 'error1', 'test.kz', 'error2'], 
+        'link': ['test.com', 'test.ru', 'error1', 'test.kz', 'error2'],
         'text': ['test.com', 'test.ru', 'error1', 'test.kz', 'error2'],
     })
     errors = [2, 4]
 
     expected_data = pd.DataFrame({
-        'link': ['test.com', 'test.ru', 'test.kz'], 
+        'link': ['test.com', 'test.ru', 'test.kz'],
         'text': ['test.com', 'test.ru', 'test.kz'],
     })
 
