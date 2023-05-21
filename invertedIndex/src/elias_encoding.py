@@ -1,73 +1,100 @@
-from work_with_files import get_inverted_index_json
-from work_with_files import save_inverted_index_json
-from typing import Any, Iterable, List
 import math
+from typing import Any, Iterable, List
+
+from BitVector import BitVector
+
+from work_with_files import get_inverted_index_json, save_inverted_index_json
 
 
-index = get_inverted_index_json("data\spbu_result.json")
-save_file = save_inverted_index_json(data=index, file_path="data\spbu_result.json",)
+def diff_encode(num_list: List[int]) -> List[int]:
+    diff_list = []
+    for i, num in enumerate(num_list):
+        if len(diff_list) != 0:
+            diff_list.append(num - num_list[i - 1])
+        else:
+            diff_list.append(num)
+
+    return diff_list
 
 
-def gamma_encode(number): # запускает гамма кодирование 
-        binary = bin(number)[2:]  # Преобразование числа в двоичное представление
-        unary_code = '0' * (len(binary) - 1) + '1'  # Унарный код
-        return unary_code + binary[1:]
+def diff_decode(diff_list: List[int]) -> List[int]:
+    num_list = []
+    for diff in diff_list:
+        if len(num_list) != 0:
+            num_list.append(diff + num_list[-1])
+        else:
+            num_list.append(diff)
+
+    return num_list
 
 
-def gamma_encode_seq(seq: Iterable[int]) -> int:
-    encoded_seq = 0
-    for s in seq:
-        encoded_s = gamma_encode(s)
-        num_of_digits = len(str(encoded_s)) # длина строки - результата гамма-кодирования для элемента 
-        encoded_seq = encoded_seq * (10**num_of_digits) + encoded_s 
-    return encoded_seq
+def _gamma_encode(number):  # запускает гамма кодирование
+    binary = bin(number)[2:]  # Преобразование числа в двоичное представление
+    unary_code = "0" * (len(binary) - 1)  # Унарный код
+    return unary_code + binary
 
 
-def gamma_decode(encoded_seq: int) -> List[int]:  # x = 1110
-    encoded_seq = str(encoded_seq).replace("9", "0") # Возвращает копию со всеми вхождениями старой подстроки, замененной новой ("old", "new")
+def gamma_encode_seq(num_list: List[int]) -> BitVector:
+    encoded_list = []
+    for num in num_list:
+        encoded_list.append(_gamma_encode(num + 1))
+    return BitVector(bitstring="".join(encoded_list))
+
+
+def gamma_decode(encoded_seq: BitVector) -> List[int]:
+    current_position = 0
     decoded_seq = []
-    while len(encoded_seq) > 0:
-        N = encoded_seq.find("0")  # for '11110' it is 4
-        bin_decoded = "1" + encoded_seq[N + 1 : 2 * N + 1]  # add most significant bit
-        encoded_seq = encoded_seq[2 * N + 1 :]
-        # x = '1' + x[num_of_leading_ones + 1:]
-        decoded_seq.append(int(bin_decoded, base=2))
+    while current_position < len(encoded_seq):
+        N = encoded_seq.next_set_bit(current_position)  # для '00001' это  4
+        next_position = (
+            2 * N + 1 - current_position
+        )  # начало (индекс) следующего числа(закодированного)
+        bin_decoded = encoded_seq[N : next_position]
+        current_position = next_position
+        decoded_seq.append(int(str(bin_decoded), base=2) - 1)
     return decoded_seq
 
 
+def delta_encode(doc_ids):  # зависит от гамма кодирования
+    delta_encoded = []
+    for num in doc_ids:
+        inc_num = num + 1
+        bit_length = int(math.log2(inc_num)) + 1  # Длина числа в битах
+        gamma_code = _gamma_encode(bit_length)  # Кодирование длины числа
+        delta_encoded.append(
+            gamma_code + bin(inc_num)[3:]
+        )  # дельта кодирование первого числа и разностей м/д последующими
+    return BitVector(bitstring="".join(delta_encoded))
 
-def delta_encode(doc_ids): # зависит от гамма кодирования 
-        delta_encoded = []
-        for i in range(len(doc_ids)):
-            if i == 0:
-                delta_encoded.append(doc_ids[i])
-            else:
-                delta = doc_ids[i] - doc_ids[i-1]
-                bit_length = int(math.log2(delta)) + 1  # Длина числа в битах
-                unary_length = int(math.log2(bit_length + 1)) + 1  # Длина унарного кода
-                gamma_code = gamma_encode(bit_length)  # Кодирование длины числа
-                unary_code = '0' * unary_length + '1'  # Унарный код
-                delta_encoded.append(gamma_code + unary_code + format(delta, '0' + str(bit_length) + 'b'))
-        return delta_encoded
 
-def delta_decode(delta_encoded): 
-        doc_ids = []
-        current_id = 0
-        for code in delta_encoded:
-            gamma_length = code.index('1') + 1  # Длина числа
-            unary_length = code[:gamma_length].count('0')  # Длина унарного кода
-            delta_length = gamma_length + unary_length + 1  # Длина разности
-            delta = int(code[gamma_length + unary_length + 1:delta_length], 2)  # Декодирование разности
-            current_id += delta  # Восстановление идентификатора документа
-            doc_ids.append(current_id)
-        return doc_ids
+def delta_decode(delta_encoded):
+    doc_ids = []
+    current_position = 0
+    while current_position < len(delta_encoded):
+        num_len_position = delta_encoded.next_set_bit(current_position)
+        gamma_length = (
+            num_len_position - current_position + 1) # сколько нужно цифр, что получить -> N->(сколько нужно последующих цифр, чтоб получить исходное число)
+        decoded_num_position = num_len_position + gamma_length
+        N_bin = delta_encoded[num_len_position : decoded_num_position]
+        N = int(str(N_bin), base=2)  # переводим N в обычное (исходное) число
+        next_position = decoded_num_position + (N - 1)
+        decoded_num_bin = "1" + str(delta_encoded[decoded_num_position:next_position])
+        decoded_num = int(decoded_num_bin, base=2) - 1  # исходное число
+        current_position = next_position
+        doc_ids.append(decoded_num)
+    return doc_ids
 
-def compress_index(path): # запускает дельта кодирование 
+
+def compress_index(path):  # запускает дельта кодирование
     index = get_inverted_index_json(path)
     words = list(index.keys())
     words_count = len(words)
     for idx in range(words_count):
-        print('Finished creating index {} % of all events'.format(int(100*(idx/words_count))))
+        print(
+            "Finished creating index {} % of all events".format(
+                int(100 * (idx / words_count))
+            )
+        )
         doc_ids = index[words[idx]]
         doc_ids.sort()  # Сортировка идентификаторов документов
         delta_encoded = delta_encode(doc_ids)  # Применение дельта кодирования Элиаса
@@ -75,4 +102,4 @@ def compress_index(path): # запускает дельта кодировани
     save_inverted_index_json(data=index, file_path=r"data\spbu_result_encoding1.json")
 
 
-compress_index(r"data\spbu_result_encoding1.json")
+# compress_index(r"data\spbu_result_encoding1.json")
